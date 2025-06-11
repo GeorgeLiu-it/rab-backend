@@ -44,7 +44,8 @@ docker run -d \
 
 python .\tests\jwt_auth.py
 
-{'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3R1c2VyIiwiZXhwIjoxNzQ5NTQxMDkzfQ.3yo8qsAzMGBit8aPOsCyWNtSK2_HRbe_4U1f-PmZfwA'}
+**365 days token**
+{'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3R1c2VyIiwiZXhwIjoxNzgxMTQwMTE5fQ.Ko4AvBorwmrY1nT_PtY4qkG7LG81qjplzSimwmlqIO8'}
 
 ## Local embedding
 
