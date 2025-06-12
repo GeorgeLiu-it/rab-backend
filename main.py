@@ -10,8 +10,13 @@ from starlette.responses import JSONResponse
 from app.core.config import VectorDBType, debug_mode, RAG_HOST, RAG_PORT, CHUNK_SIZE, CHUNK_OVERLAP, PDF_EXTRACT_IMAGES, VECTOR_DB_TYPE, \
     LogMiddleware, logger
 from app.core.middleware import security_middleware
+from app.crud.base import create_db_and_tables
 from app.routers import document_routes, pgvector_routes
 from app.db.base import PSQLDatabase, ensure_custom_id_index_on_embedding
+# 导入 fastApi 子模块
+from app.routers import chat_router
+from app.routers import chat_session_router
+from app.routers import document_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,6 +47,9 @@ app.state.PDF_EXTRACT_IMAGES = PDF_EXTRACT_IMAGES
 
 # Include routers
 app.include_router(document_routes.router)
+app.include_router(chat_router.router)
+app.include_router(chat_session_router.router)
+app.include_router(document_router.router)
 if debug_mode:
     app.include_router(router=pgvector_routes.router)
 
@@ -62,4 +70,5 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 if __name__ == "__main__":
+    create_db_and_tables()
     uvicorn.run(app, host=RAG_HOST, port=RAG_PORT, log_config=None)

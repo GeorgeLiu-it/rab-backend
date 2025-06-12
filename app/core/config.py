@@ -23,6 +23,10 @@ class EmbeddingsProvider(Enum):
     OPENAI = "openai"
     OLLAMA = "ollama"
 
+class ChatProvider(Enum):
+    OPENAI = "openai"
+    OLLAMA = "ollama"
+
 
 def get_env_variable(
     var_name: str, default_value: str = None, required: bool = False
@@ -257,3 +261,37 @@ known_source_ext = [
     "eml",
     "txt",
 ]
+
+
+## Chat Config
+CHAT_MODEL = get_env_variable("CHAT_MODEL", "deepseek-r1:7b")
+CHAT_PROVIDER = ChatProvider(
+    get_env_variable("CHAT_PROVIDER", ChatProvider.OLLAMA.value).lower()
+)
+
+## Chat init
+def init_chat(provider, model):
+    if provider == ChatProvider.OPENAI:
+        from langchain_openai import OpenAIEmbeddings
+
+        return OpenAIEmbeddings(
+            model=model,
+            api_key=RAG_OPENAI_API_KEY,
+            openai_api_base=RAG_OPENAI_BASEURL,
+            openai_proxy=RAG_OPENAI_PROXY,
+        )
+    elif provider == ChatProvider.OLLAMA:
+        from langchain_ollama import ChatOllama
+        from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+        return ChatOllama(
+                    model=model,
+                    temperature=0.1,
+                    streaming=True,
+                    callbacks=[StreamingStdOutCallbackHandler()],
+                )
+    else:
+        raise ValueError(f"Unsupported chat provider: {provider}")
+
+llm = init_chat(CHAT_PROVIDER, CHAT_MODEL)
+logger.info(f"Initialized chat of type: {type(llm)}")
