@@ -17,8 +17,8 @@ from .base import engine
 
 
 class DocumentCrud:
-    __BASE_PATH = "/home/ly/Project"
-    __FILE_PATH = "/fileStorage"
+    __BASE_PATH = "C:\\Users\\liushanshan\\Documents\\ai\\rag_ollama"
+    __FILE_PATH = "\\uploads\\life"
 
     async def __save_file(self, file: UploadFile = File()):
         """I/O操作，写入文件"""

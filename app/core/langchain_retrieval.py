@@ -31,9 +31,10 @@ def build_qa_chain():
     retriever = vector_store.as_retriever(
         search_type="mmr",
         search_kwargs={
-            "k": 3,  # 检索结果返回最相似的文档数量
-            "fetch_k": 20,  # 要传递给 MMR 算法的文档量
+            "k": 2,  # 检索结果返回最相似的文档数量
+            "fetch_k": 10,  # 要传递给 MMR 算法的文档量
             "lambda_mult": 0.5,  # MMR 返回的结果多样性，1 表示最小多样性，0 表示最大值。（默认值：0.5）
+            "filter": {"file_id": "george_file_id"},
         },
     )
 

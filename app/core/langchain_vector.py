@@ -1,3 +1,4 @@
+import hashlib
 import unicodedata
 from fastapi import HTTPException
 from langchain_community.document_loaders import (
@@ -7,7 +8,9 @@ from langchain_community.document_loaders import (
     Docx2txtLoader,
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 import time
+from app.core.config import vector_store, CHUNK_SIZE, CHUNK_OVERLAP
 
 from app.core.test_base import LOAD_PATH, VECTOR_DIR, chroma_vector_store
 
@@ -90,7 +93,7 @@ def load_documents(source_dir=LOAD_PATH):
         raise HTTPException(status_code=500, detail=f"加载文档失败：{str(e)}")
 
 
-def split_documents(documents, chunk_size=800, chunk_overlap=150):
+def split_documents(documents, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP):
     """
     使用递归字符分割器处理文本
     参数说明：
@@ -119,13 +122,13 @@ def create_vector_store(split_docs, persist_dir=VECTOR_DIR):
     - persist_dir: 向量数据库存储路径（建议使用WSL原生路径）
     """
 
-    # 初始化 Chroma 向量数据库
-    vector_store = chroma_vector_store()
+    # # 初始化 Chroma 向量数据库
+    # vector_store = chroma_vector_store()
 
-    # 向量化文档之前，先把原来集合里的数据清空
-    ids = vector_store._collection.get()["ids"]
-    if len(ids):
-        vector_store.delete(ids=vector_store._collection.get()["ids"])
+    # # 向量化文档之前，先把原来集合里的数据清空
+    # ids = vector_store._collection.get()["ids"]
+    # if len(ids):
+    #     vector_store.delete(ids=vector_store._collection.get()["ids"])
 
     # 如果分割文档为空，不做向量化操作
     if not split_docs or len(split_docs) == 0:
@@ -135,12 +138,26 @@ def create_vector_store(split_docs, persist_dir=VECTOR_DIR):
         start_time = time.time()
         print(f"\n开始向量化====>")
 
+        docs = [
+            Document(
+                page_content=doc.page_content,
+                metadata={
+                    "file_id": "george_file_id",
+                    "user_id": "george_user",
+                    "digest": generate_digest(doc.page_content),
+                    **(doc.metadata or {}),
+                },
+            )
+            for doc in split_docs
+        ]
+
         # 向量化文档到向量数据库
-        vector_store.add_documents(split_docs)
+        ids = vector_store.add_documents(docs, ids=["george_file_id"] * len(docs))
 
         print(f"\n向量化完成！耗时 {time.time()-start_time:.2f} 秒")
-        print(f"数据库存储路径：{persist_dir}")
-        print(f"总文档块数：{vector_store._collection.count()}")
+        print(f"总文档块数：{len(docs)}")
+
+        return {"message": "Documents added successfully", "ids": ids}
 
     except Exception as e:
         print(f"向量化失败：{str(e)}")
@@ -157,3 +174,7 @@ def vector_documents():
     split_docs = split_documents(documents)
     # 执行向量化（使用之前分割好的split_docs）
     create_vector_store(split_docs)
+
+def generate_digest(page_content: str):
+    hash_obj = hashlib.md5(page_content.encode())
+    return hash_obj.hexdigest()
