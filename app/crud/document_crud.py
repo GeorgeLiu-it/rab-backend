@@ -17,8 +17,9 @@ from .base import engine
 
 
 class DocumentCrud:
-    __BASE_PATH = "C:\\Users\\liushanshan\\Documents\\ai\\rag_ollama"
-    __FILE_PATH = "\\uploads\\life"
+    # __BASE_PATH = "C:\\Users\\liushanshan\\Documents\\ai\\rag_ollama"
+    __BASE_PATH = Path(__file__).resolve().parents[2]
+    __FILE_PATH = Path("uploads/life")
 
     async def __save_file(self, file: UploadFile = File()):
         """I/O操作，写入文件"""
@@ -26,7 +27,7 @@ class DocumentCrud:
         old_file_name = os.path.basename(file.filename)
         # 生成唯一文件名称
         new_file_name = f"{uuid.uuid4()}{Path(old_file_name).suffix}"
-        save_path = Path(self.__BASE_PATH + self.__FILE_PATH) / new_file_name
+        save_path = self.__BASE_PATH / self.__FILE_PATH / new_file_name
         new_path = Path(self.__FILE_PATH) / new_file_name
         new_file_path = str(new_path)
         new_suffix = new_path.suffix

@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 import unicodedata
 from fastapi import HTTPException
 from langchain_community.document_loaders import (
@@ -168,8 +169,13 @@ def vector_documents():
     """
     启动文档向量化，并保存数据库
     """
+    
+    doc_path = Path(__file__).resolve().parents[2] / Path("uploads/life")
+
+    print(doc_path)
+    
     # 加载本地文档
-    documents = load_documents()
+    documents = load_documents(doc_path)
     # 执行分割
     split_docs = split_documents(documents)
     # 执行向量化（使用之前分割好的split_docs）
