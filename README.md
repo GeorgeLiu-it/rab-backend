@@ -1,18 +1,92 @@
-# RAG using Ollama and Python
+# Fastapi RAG application deployment using docker
 
-## Backend stack
+## System setup
+
+Refert to README_env.md in server project
+
+## Docker images
+
+```bash
+# Export
+docker save -o [image.tar] [local-image:version]
+
+# Import
+docker load -i [image.tar]
+```
+
+## Application deployment
+
+### PGVector
+
+**Docker command**
+
+```bash
+docker run -d \
+  --name pgvector \
+  -e POSTGRES_DB=rag_vector \
+  -e POSTGRES_USER=george \
+  -e POSTGRES_PASSWORD=123456 \
+  -v $HOME/postgresql/data:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  --restart unless-stopped \
+  ankane/pgvector:latest
+```
+
+### Rag application
+
+**Build docker image**
+
+- Dockerfile
+
+```dockerfile
+# ---- Base image ----
+FROM python:3.12.1-slim
+
+# Add your private CA
+COPY Zscaler_Root_CA.crt /usr/local/share/ca-certificates/ca.crt
+RUN update-ca-certificates
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Create working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app source code
+COPY . /app/
+
+# Expose port
+EXPOSE 8000
+
+# Command to run the app with Gunicorn and Uvicorn workers
+CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "60"]
+```
+
+## Embedding and LLM integration
+
+### Backend stack
 
 Fastapi
 
-## Chat model
+### Chat model
 
 deepseek-r1:7b
 
-## Embedding model
+### Embedding model
 
 deepseek-r1:7b
 
-## Create PGSQL using docker
+### Create PGSQL using docker
 
 ```bash
 docker run -d \
@@ -21,15 +95,15 @@ docker run -d \
   -e POSTGRES_USER=george \
   -e POSTGRES_PASSWORD=123456 \
   -v pgdata2:/var/lib/postgresql/data \
-  -p 5433:5432 \
+  -p 5432:5432 \
   ankane/pgvector:latest
 ```
 
-## PGSQL table test
+### PGSQL table test
 
 [http://localhost:8000/test/check_index?table_name=langchain_pg_collection&column_name=uuid](http://localhost:8000/test/check_index?table_name=langchain_pg_collection&column_name=uuid)
 
-## JSON format for /local/embed post request to FastAPI
+### JSON format for /local/embed post request to FastAPI
 
 ```json
 {
@@ -40,14 +114,14 @@ docker run -d \
 }
 ```
 
-## Generate JWT token
+### Generate JWT token
 
 python .\tests\jwt_auth.py
 
 **365 days token**
 {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InRlc3R1c2VyIiwiZXhwIjoxNzgxMTQwMTE5fQ.Ko4AvBorwmrY1nT_PtY4qkG7LG81qjplzSimwmlqIO8'}
 
-## Local embedding
+### Local embedding
 
 ![alt text](image.png)
 
@@ -144,3 +218,47 @@ or query
 ### context
 
 ![alt text](image-2.png)
+
+## Appendix
+
+### Configure Ollama running WSL as 0.0.0.0 access
+
+```bash
+# edit service start daemon
+sudo vim /etc/systemd/system/ollama.service
+
+# Content
+[Unit]
+Description=Ollama API
+
+[Service]
+ExecStart=/usr/bin/env OLLAMA_HOST=0.0.0.0 /usr/local/bin/ollama serve
+Restart=always
+User=YOUR_USER
+
+[Install]
+WantedBy=default.target
+
+# reload and restart
+sudo systemctl daemon-reexec
+sudo systemctl enable --now ollama
+```
+
+### Window proxy forwarding
+
+```bash
+# forward network flow to wsl
+netsh interface portproxy add v4tov4 listenport=11434 listenaddress=0.0.0.0 connectport=11434 connectaddress=172.29.2.187
+
+# check the forward settings
+netsh interface portproxy show all
+```
+
+### Curl ollama api on remote pc
+
+```bash
+curl http://[windows ip]:11434
+```
+
+
+
