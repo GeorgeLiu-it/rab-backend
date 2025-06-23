@@ -10,7 +10,6 @@ langchain_ollama==0.3.3
 langchain_openai==0.3.24
 langchain_text_splitters==0.3.8
 pydantic==2.11.7
-PyJWT==2.9.0
 PyJWT==2.10.1
 pytest==8.3.5
 python-dotenv==1.1.0
