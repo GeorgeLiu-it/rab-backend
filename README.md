@@ -141,8 +141,6 @@ docker run -d -p 8000:8000 -v $HOME/rag_backend/.env:/app/.env --name rag_backen
   docker-compose --env-file .env.docker-compose down
   ```
 
-  
-
 ## Embedding and LLM integration
 
 ### Backend stack
