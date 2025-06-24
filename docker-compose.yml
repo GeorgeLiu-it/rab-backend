@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   rag_backend:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: rag_backend
     depends_on:
       - db
