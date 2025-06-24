@@ -74,13 +74,13 @@ CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0
 
 - Run
 
-  ```bash
-  # Generate docker image
-  docker build -t blog_server .
-  
-  # Run docker container
-  docker run -d -p 8080:8080 -v $HOME/app/config.yaml:/config.yaml --name blog_server blog_server:latest
-  ```
+```bash
+# Generate docker image
+docker build -t rag_backend .
+
+# Run docker container
+docker run -d -p 8000:8000 -v $HOME/rag_backend/.env:/app/.env --name rag_backend rag_backend:latest
+```
 
 **Docker-compose to run all-in-one**
 
