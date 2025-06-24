@@ -72,6 +72,77 @@ EXPOSE 8000
 CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "60"]
 ```
 
+- Run
+
+  ```bash
+  # Generate docker image
+  docker build -t blog_server .
+  
+  # Run docker container
+  docker run -d -p 8080:8080 -v $HOME/app/config.yaml:/config.yaml --name blog_server blog_server:latest
+  ```
+
+**Docker-compose to run all-in-one**
+
+- .env.docker-compose file
+
+- docker-compose.yml
+
+  ```yml
+  version: '3.8'
+  
+  services:
+    rag_backend:
+      build: .
+      container_name: rag_backend
+      depends_on:
+        - db
+      ports:
+        - "${APP_PORT}:8000"
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_HOST: db
+      volumes:
+        - "${HOME_DIR}/rag_backend/.env:/app/.env"
+      networks:
+        - rag_net
+      restart: unless-stopped
+  
+    db:
+      image: ankane/pgvector:latest
+      container_name: pgvector
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      volumes:
+        - "${HOME_DIR}/postgresql/data:/var/lib/postgresql/data"
+      ports:
+        - "${POSTGRES_PORT}:5432"
+      networks:
+        - rag_net
+      restart: unless-stopped
+  
+  networks:
+    rag_net:
+      driver: bridge
+  
+  ```
+
+- Docker-compose command
+
+  ```bash
+  # up
+  docker-compose --env-file .env.docker-compose up -d
+  
+  # down
+  docker-compose --env-file .env.docker-compose down
+  ```
+
+  
+
 ## Embedding and LLM integration
 
 ### Backend stack
