@@ -264,7 +264,7 @@ Content-Type:application/json
 
 **body**
 {
-  "query": "FFF团的吉祥物是什么",
+  "query": "易经第一章的内容是什么？",
   "file_ids": [
     "testid1",
     "testid2"
@@ -274,7 +274,7 @@ Content-Type:application/json
 
 or query
 {
-  "query": "FFF团的吉祥物是什么",
+  "query": "易经第一章的内容是什么？",
   "file_id": "testid1",
   "k": 4,
   "entity_id": "testuser"
