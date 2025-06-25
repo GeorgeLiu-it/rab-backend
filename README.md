@@ -264,7 +264,7 @@ Content-Type:application/json
 
 **body**
 {
-  "query": "易经第一章的内容是什么？",
+  "query": "What's the main point of yijing chapter 1？",
   "file_ids": [
     "testid1",
     "testid2"
@@ -274,7 +274,7 @@ Content-Type:application/json
 
 or query
 {
-  "query": "易经第一章的内容是什么？",
+  "query": "What's the main point of yijing chapter 1？",
   "file_id": "testid1",
   "k": 4,
   "entity_id": "testuser"
