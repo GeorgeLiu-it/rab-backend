@@ -289,6 +289,7 @@ def init_chat(provider, model):
                     temperature=0.1,
                     streaming=True,
                     callbacks=[StreamingStdOutCallbackHandler()],
+                    base_url=OLLAMA_BASE_URL,
                 )
     else:
         raise ValueError(f"Unsupported chat provider: {provider}")
